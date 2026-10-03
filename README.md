@@ -18,8 +18,6 @@ What they really care about is:
 - Can I get there without a car?
 - Is there useful public transport nearby?
 - If I drive, is parking available?
-- Can I safely walk or cycle?
-- How close am I to the other places I regularly visit?
 
 This creates a discovery problem: **a suitable home may exist somewhere the user never thought to search.**
 
@@ -41,11 +39,11 @@ It can also recommend properties that don't perfectly satisfy every preference b
 
 For example:
 
-> A user wants an apartment within 20 minutes of their workplace for €1,800/month.
+> A user wants an apartment close to their workplace for €1,800/month.
 
-> HomeMatch discovers a €1,550/month apartment 30 minutes away, but it sits directly beside a train station and doesn't require the user to own a car.
+> HomeMatch discovers a €1,800/month apartment that is not very close to their workplace in walking distance, but it sits directly beside a tram station and doesn't require the user to own a car or walk.
 
-Rather than hiding that listing because it fails one filter, HomeMatch can surface it as a strong alternative and explain **why**.
+The user would've normally not discovered that place because of the distance using a traditional home search engine. HomeSearch helps people find places that normally would appear too far and therefore not even get found.
 
 ---
 
@@ -55,13 +53,13 @@ Rather than hiding that listing because it fails one filter, HomeMatch can surfa
 
 Existing property search:
 
-**Location → Properties**
+**Area → Properties**
 
 HomeMatch:
 
-**Your needs → Suitable locations → Properties**
+**Work/school location → Properties**
 
-This shifts housing search from a **location filtering problem** into a **matching and optimisation problem**.
+This shifts housing search from a **neighbourhood or geographical distance search** into a **commute-based search** which includes places that appear far but are well connected, and discludes places that appear not too far but aren't connected via public transit at all.
 
 ---
 
@@ -98,9 +96,10 @@ It is particularly useful for:
 - Maximum monthly rent
 - Purchase budget
 - Flexible/strict budget
+- Number of rooms
 
-### Important Locations
-Users can add places they regularly need to reach.
+### Important Location
+Users can the place they regularly need to reach.
 
 Examples:
 
@@ -110,17 +109,7 @@ Examples:
 - Family
 - City centre
 
-Each location can have an importance level.
 
-Example:
-
-**Work**
-- Maximum commute: 30 minutes
-- Importance: Very High
-
-**City Centre**
-- Maximum journey: 45 minutes
-- Importance: Medium
 
 ### Transport Preferences
 
@@ -194,11 +183,11 @@ One of HomeMatch's key features is deliberately showing users **good options out
 
 For example:
 
-> "You searched around Dublin 2, but this property in Dublin 8 is €320/month cheaper and only adds 6 minutes to your commute."
+> "This home is 36 minutes away (20% further away) despite your search for a 30 minute commute. However, it is below your budget"
 
 Or:
 
-> "This home exceeds your budget by €75/month, but matches every other high-priority preference."
+> "This home exceeds your budget by 10%, but matches your preferences."
 
 Or:
 
@@ -206,56 +195,7 @@ Or:
 
 HomeMatch should always explain **why a recommendation is being shown**.
 
----
-
-# 8. User Experience
-
-## Step 1 — Tell us about your life
-
-User enters:
-
-- Rent or buy
-- Budget
-- Workplace / important destinations
-- Transport methods
-- Maximum acceptable commute
-- Property requirements
-
-## Step 2 — HomeMatch searches
-
-The platform evaluates properties based on the user's priorities rather than simply applying location filters.
-
-## Step 3 — Explore Matches
-
-Results are ranked by overall suitability.
-
-```text
-🏠 Property A                         94% Match
-€1,700/month
-
-💼 Work        18 min 🚲
-🚆 Station      3 min 🚶
-💰 Budget       ✓
-🛏 Bedrooms     2
-
-"Excellent commute and within your budget."
-```
-
-## Step 4 — Explore Alternatives
-
-HomeMatch can surface recommendations such as:
-
-```text
-💡 Worth considering
-
-This property is 8 km farther away than your preferred
-area, but has a direct 21-minute train connection to work
-and saves €260/month.
-```
-
----
-
-# 9. Main Screens
+# 8. Main Screens
 
 For the hackathon MVP, focus on approximately **four screens**.
 
@@ -271,13 +211,7 @@ CTA:
 
 ### 2. Preferences
 
-Simple onboarding asking:
-
-- What's your budget?
-- Where do you need to travel regularly?
-- How do you travel?
-- What's your maximum commute?
-- What type of home do you need?
+Simple onboarding asking for the user inputs under heading #5.
 
 ### 3. Results
 
@@ -286,10 +220,9 @@ Map + property cards ranked by Match Score.
 Each card should immediately show:
 
 - Price
-- Match %
-- Commute
-- Transport
-- Important positives/negatives
+- Commute time
+- Transport type for the commute time shown
+- Number of rooms
 
 ### 4. Property Detail
 
@@ -344,7 +277,7 @@ Maximum commute: 30 minutes
 
 ### Traditional Search
 
-The user needs to decide which Dublin neighbourhoods to search individually.
+The user needs to decide which Dublin neighbourhoods to search individually on a site like daft.ie
 
 ### HomeMatch
 
@@ -402,7 +335,7 @@ Node.js / Python
 Mock dataset or available property API/dataset
 
 ### Maps / Routing
-Google Maps, Mapbox, OpenStreetMap or another routing API
+Google Maps or similar
 
 ### Matching Engine
 Simple weighted scoring algorithm
@@ -425,10 +358,13 @@ With additional development, HomeMatch could include:
 - Safety and environmental information
 - Commute cost estimation
 - Car ownership cost comparison
+- Parking costs
 - Personalised recommendation learning
 - Saved searches
 - Alerts when high-match properties appear
 - Comparison between properties
+
+Don't implement them for the MVP.
 
 ---
 
@@ -441,13 +377,10 @@ However, **housing discovery can be improved.**
 HomeMatch can help people:
 
 - Discover areas they hadn't considered
-- Understand trade-offs between price and commute
-- Reduce unnecessary commuting
 - Find housing compatible with public transport
-- Make better-informed housing decisions
-- Search a wider geographic area without manually researching every neighbourhood
+- Find more listings without manually researching every district or searching the entire city.
 
-Instead of asking people to understand an entire city's housing and transport network before searching, HomeMatch performs that analysis for them.
+Instead of asking people to understand an entire city's transport network and how its linked to every part of a city before searching, HomeMatch performs that analysis for them.
 
 ---
 
@@ -459,6 +392,6 @@ Traditional property websites ask you where you want to live.
 
 We ask **where you need to go**.
 
-Tell HomeMatch where you work, your budget, how you travel and what matters to you. We analyse properties across the city and rank them based on how well they actually fit your life — including options you might never have thought to search for.
+Tell HomeMatch where you work and your budget. We find properties based on how far they actually are for where you need to be, helping you find places that appear far but are easy to commute from thanks to public transit and road connections.
 
 **Don't search neighbourhoods. Search for the home that fits your life.**
