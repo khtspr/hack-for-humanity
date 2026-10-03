@@ -98,16 +98,18 @@ It is particularly useful for:
 - Flexible/strict budget
 - Number of rooms
 
-### Important Location
-Users can the place they regularly need to reach.
+### Important Locations
+Users can enter the places they/their family needs to go to.
+HomeMatch should accomodate for every member of the house, it should not be just for a single student.
 
 Examples:
 
-- Workplace
+- Workplaces
 - University/school
-- Partner's workplace
-- Family
+- Kindergarten
+- Family (parents' house)
 - City centre
+- Grocery store
 
 
 
