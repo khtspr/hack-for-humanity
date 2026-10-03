@@ -337,7 +337,7 @@ Node.js / Python
 Mock dataset or available property API/dataset
 
 ### Maps / Routing
-Google Maps or similar
+OpenStreetMap: Leaflet tiles, OSRM routing (journey times), Overpass amenities, Nominatim geocoding. Stop locations from the NTA GTFS file.
 
 ### Matching Engine
 Simple weighted scoring algorithm
@@ -397,3 +397,34 @@ We ask **where you need to go**.
 Tell HomeMatch where you work and your budget. We find properties based on how far they actually are for where you need to be, helping you find places that appear far but are easy to commute from thanks to public transit and road connections.
 
 **Don't search neighbourhoods. Search for the home that fits your life.**
+
+---
+
+# 16. Running Locally
+
+Requires **Node ≥ 22.18** (the data scripts import `lib/data.ts` using Node's built-in TypeScript support). No API keys needed.
+
+```bash
+npm install
+npm run dev
+```
+
+The generated data in `data/generated/` is committed, so the app runs straight away. To refresh it: `npm run prepare-data` (stop/line file ~1 min + OSM amenities, a few min).
+
+### Data sources
+
+| Data | Source | When |
+|---|---|---|
+| Listings (7 Dublin rentals) | Daft.ie — coordinates, rooms, facilities in `lib/data.ts` | static |
+| Stops and which lines serve them | [NTA GTFS timetable file](https://www.transportforireland.ie/transitData/Data/GTFS_Realtime.zip) → `npm run build:transit` → `data/generated/transit.json` (offline file, no API) | build time |
+| **Journey times** (walk, cycle, drive, road legs of bus/Luas trips) | OpenStreetMap routing — [OSRM on routing.openstreetmap.de](https://routing.openstreetmap.de), `table` service, batched + cached | request time |
+| Kindergartens, schools, groceries within 1 km | OpenStreetMap Overpass → `npm run build:amenities` → `data/generated/amenities.json` | build time |
+| Destination coordinates | OpenStreetMap Nominatim (1 req/s, cached) | request time |
+| Map tiles | OpenStreetMap via Leaflet | browser |
+
+**Commute estimate:** for each destination, HomeMatch builds candidate journeys for the modes the user picked and times every leg on OpenStreetMap:
+- **Walk / cycle:** OSM foot/bike route. **Drive:** OSM car route × 1.4 (OSRM assumes empty roads) + 5 min parking.
+- **Bus / Luas:** the stop file finds a line serving a stop near home and, further along, a stop near the destination. Time = OSM walk to the stop + half the peak headway + OSM road time between the stops × 1.6 (bus) / 1.3 (Luas) + OSM walk from the stop.
+- **DART / rail** (no road to route on) and **journeys needing a change** are shown as *estimates*.
+
+The first search for a new set of destinations takes ~10 s (OSRM requests are spaced out for the shared community server); repeats come from cache in milliseconds.
