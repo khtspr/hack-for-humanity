@@ -1,0 +1,17 @@
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import type { TransportMode } from "../../lib/types";
+
+export default function PreferencesPage() {
+  const router = useRouter();
+  const [listingType, setListingType] = useState<"rent" | "buy">("rent");
+  const [budget, setBudget] = useState("2000");
+  const [bedrooms, setBedrooms] = useState("1");
+  const [destination, setDestination] = useState("Google Dublin");
+  const [maxCommute, setMaxCommute] = useState("30");
+  const [modes, setModes] = useState<TransportMode[]>(["bike", "train"]);
+  const toggleMode = (mode: TransportMode) => setModes((current) => current.includes(mode) ? current.filter((item) => item !== mode) : [...current, mode]);
+  function submit(event: React.FormEvent) { event.preventDefault(); localStorage.setItem("homematch-preferences", JSON.stringify({ listingType, budget: Number(budget), bedrooms: Number(bedrooms), destination, maxCommute: Number(maxCommute), transportModes: modes })); router.push("/results"); }
+  return <main className="shell"><nav className="nav"><a className="brand" href="/">Home<span>Match</span> 🏠</a><span className="muted">Step 1 of 1</span></nav><div className="form-card"><div className="eyebrow">Tell us about your life</div><h2>What would make a home work for you?</h2><p className="muted">We’ll use these answers to rank homes and show you useful alternatives.</p><form onSubmit={submit}><div className="field"><label>Are you looking to rent or buy?</label><div className="choice-grid">{(["rent", "buy"] as const).map((type) => <label className="choice" key={type}><input type="radio" checked={listingType === type} onChange={() => setListingType(type)} />{type[0].toUpperCase() + type.slice(1)}</label>)}</div></div><div className="field"><label htmlFor="budget">Maximum {listingType === "rent" ? "monthly rent" : "purchase price"} (€)</label><input id="budget" type="number" min="1" value={budget} onChange={(event) => setBudget(event.target.value)} required /></div><div className="field"><label htmlFor="destination">Where do you need to go?</label><input id="destination" value={destination} onChange={(event) => setDestination(event.target.value)} required /><small className="muted">For example, your workplace, university or school.</small></div><div className="field"><label>How do you travel?</label><div className="choice-grid">{(["bike", "train", "bus", "car", "walk"] as TransportMode[]).map((mode) => <label className="choice" key={mode}><input type="checkbox" checked={modes.includes(mode)} onChange={() => toggleMode(mode)} />{mode[0].toUpperCase() + mode.slice(1)}</label>)}</div></div><div className="row"><div className="field" style={{flex:1}}><label htmlFor="commute">Maximum commute (minutes)</label><input id="commute" type="number" min="1" value={maxCommute} onChange={(event) => setMaxCommute(event.target.value)} required /></div><div className="field" style={{flex:1}}><label htmlFor="bedrooms">Minimum bedrooms</label><select id="bedrooms" value={bedrooms} onChange={(event) => setBedrooms(event.target.value)}><option value="1">1 bedroom</option><option value="2">2 bedrooms</option><option value="3">3 bedrooms</option></select></div></div><button className="button" type="submit">Show my matches →</button></form></div></main>;
+}
