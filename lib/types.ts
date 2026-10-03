@@ -1,12 +1,22 @@
 export type TransportMode = "car" | "train" | "bus" | "bike" | "walk";
 
+export type DestinationType = "work" | "partner-work" | "university" | "school" | "family" | "other";
+
+export type Destination = {
+  id: string;
+  name: string;
+  type: DestinationType;
+  visitsPerWeek: number;
+  importance: "low" | "medium" | "high";
+};
+
 export type Preferences = {
   listingType: "rent" | "buy";
   budget: number;
   bedrooms: number;
-  destination: string;
   maxCommute: number;
   transportModes: TransportMode[];
+  destinations: Destination[];
 };
 
 export type Property = {
@@ -21,7 +31,8 @@ export type Property = {
   description: string;
   parking: boolean;
   nearbyTransport: string;
+  transportQuality: "Limited" | "Good" | "Excellent";
   image: string;
 };
 
-export type Commute = { mode: TransportMode; minutes: number; summary: string };
+export type Commute = { mode: TransportMode; minutes: number; summary: string; transportQuality: Property["transportQuality"] };
