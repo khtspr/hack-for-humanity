@@ -35,6 +35,11 @@ h3 { margin: 9px 0 4px; font-size: 23px; letter-spacing: -.03em; }
 .button.secondary { background: transparent; color: var(--brand-dark); }
 .button.secondary:hover { background: var(--surface-subtle); }
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.hero-nav { max-width: var(--max-width); margin: 0 auto; padding: 22px 32px; color: #f2f4f8; font-weight: 700; text-shadow: 0 1px 12px rgb(0 0 0 / 45%); }
+.hero-nav .brand span { color: #f5b919; }
+.hero-nav a:hover { opacity: .8; }
+#main-content:focus { outline: none; }
+.hero-heading { max-width: 640px; margin: 14px 0 20px; font-size: clamp(34px, 4.6vw, 54px); letter-spacing: -.05em; }
 .hero { padding: 64px 0 94px; }
 .hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 72px; align-items: center; }
 .hero-card { background: var(--surface); border: 1px solid var(--line); border-top: 5px solid var(--brand); padding: 26px; box-shadow: 0 8px 24px rgb(29 41 35 / 7%); }
@@ -140,6 +145,7 @@ hr { border: 0; border-top: 1px solid var(--line); }
 .source-note { margin-top: 18px; font-size: 12px; }
 @media (max-width: 760px) {
   .shell { padding: 18px 20px; }
+  .hero-nav { padding: 16px 20px; }
   .hero { padding: 34px 0 60px; }
   .hero-grid, .results-layout { grid-template-columns: 1fr; gap: 28px; }
   .steps { grid-template-columns: 1fr; gap: 18px; }
