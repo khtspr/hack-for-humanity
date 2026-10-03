@@ -158,4 +158,47 @@ hr { border: 0; border-top: 1px solid var(--line); }
   .results-intro { align-items: flex-start; flex-direction: column; gap: 4px; }
   .comparison-grid { grid-template-columns: 1fr 1fr 1fr; }
 }
+/* DART loader (components/ui/dart-loader.tsx) */
+.dart-loader-card { max-width: 760px; margin: 40px auto 80px; text-align: center; }
+.dart-loader { --train-w: 372px; position: relative; height: 240px; overflow: hidden; border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); background: linear-gradient(180deg, #8fcbe4 0%, #c9e8f3 55%, #e9f5ee 100%); }
+.dart-loader-title { margin: 28px 0 6px; font: 700 15px/1.4 "Courier New", ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; }
+.dart-loader-detail { margin: 0; font-size: 14px; }
+.dart-dots::after { content: "..."; display: inline-block; width: 0; overflow: hidden; vertical-align: bottom; animation: dart-dots 1.2s steps(4, jump-none) infinite; }
+.dart-cloud { position: absolute; width: 8px; height: 8px; background: #fff; box-shadow: 8px 0 #fff, 16px 0 #fff, -8px 8px #fff, 0 8px #fff, 8px 8px #fff, 16px 8px #fff, 24px 8px #fff, 32px 8px #fff, -16px 16px #fff, -8px 16px #fff, 0 16px #fff, 8px 16px #fff, 16px 16px #fff, 24px 16px #fff, 32px 16px #fff, 40px 16px #fff; animation: dart-drift linear infinite; }
+.dart-cloud1 { top: 18px; left: 12%; animation-duration: 26s; animation-delay: -4s; }
+.dart-cloud2 { top: 52px; left: 70%; animation-duration: 34s; animation-delay: -19s; transform: scale(.75); }
+.dart-cloud3 { top: 30px; left: 45%; animation-duration: 30s; animation-delay: -12s; transform: scale(.5); }
+.dart-cloud4 { top: 8px; left: 85%; animation-duration: 40s; animation-delay: -30s; transform: scale(.6); }
+.dart-cloud5 { top: 64px; left: 28%; animation-duration: 22s; animation-delay: -16s; transform: scale(.4); }
+/* Overhead line: wire at pantograph height (train is 44 units tall, head at unit 1), poles every 260px. */
+.dart-catenary { position: absolute; left: 0; right: 0; bottom: 40px; top: calc(202px - var(--train-w) * 43 / 124); background: linear-gradient(#2e3338, #2e3338) 0 0 / 100% 2px no-repeat, linear-gradient(90deg, #6b7178 0 30px, transparent 30px) -12px 0 / 260px 4px repeat-x, linear-gradient(90deg, #6b7178 0 6px, transparent 6px) 0 0 / 260px 100% repeat-x; animation: dart-catenary 1.3s linear infinite; }
+.dart-speedlines span { position: absolute; left: 200%; height: 3px; width: 18%; background: rgb(255 255 255 / 85%); animation: lf .7s linear infinite; }
+.dart-speedlines span:nth-child(1) { top: 44%; animation-delay: -.1s; }
+.dart-speedlines span:nth-child(2) { top: 56%; width: 12%; animation: lf2 .9s linear -.4s infinite; }
+.dart-speedlines span:nth-child(3) { top: 68%; animation: lf3 .6s linear -.2s infinite; }
+.dart-speedlines span:nth-child(4) { top: 34%; width: 8%; animation: lf4 1s linear -.6s infinite; }
+.dart-train { position: absolute; left: 50%; bottom: 38px; width: var(--train-w); transform: translateX(-50%); }
+.dart-train-body { position: relative; animation: dart-rumble .32s steps(2) infinite; }
+.dart-train-svg { display: block; width: 100%; height: auto; }
+.dart-sparks { position: absolute; top: 0; left: calc(100% * 87 / 124); }
+.dart-sparks span { position: absolute; top: 0; left: 0; width: 4px; height: 4px; background: #ffe066; box-shadow: 0 0 6px #fff3a0; animation: fazer1 .5s linear infinite; }
+.dart-sparks span:nth-child(2) { top: -3px; animation: fazer2 .7s linear -.2s infinite; }
+.dart-sparks span:nth-child(3) { top: 2px; animation: fazer3 .4s linear -.1s infinite; }
+.dart-sparks span:nth-child(4) { top: -5px; width: 3px; height: 3px; animation: fazer4 .9s linear -.5s infinite; }
+.dart-track { position: absolute; left: 0; right: 0; bottom: 0; height: 40px; background-color: #a39b8e; background-image: linear-gradient(#b9bec4, #b9bec4), linear-gradient(#5d6369, #5d6369), linear-gradient(90deg, #6d4c33 0 14px, transparent 14px), linear-gradient(90deg, #8c8478 0 4px, transparent 4px 10px, #b8b0a3 10px 14px, transparent 14px); background-size: 100% 3px, 100% 3px, 30px 6px, 22px 4px; background-position: 0 0, 0 3px, 0 6px, 0 20px; background-repeat: no-repeat, no-repeat, repeat-x, repeat; animation: dart-track .15s linear infinite; }
+@keyframes dart-dots { to { width: 3ch; } }
+@keyframes dart-drift { from { left: 110%; } to { left: -20%; } }
+@keyframes dart-catenary { to { background-position: 0 0, -272px 0, -260px 0; } }
+@keyframes dart-track { to { background-position: 0 0, 0 3px, -30px 6px, -22px 20px; } }
+@keyframes dart-rumble { 50% { transform: translateY(-2px); } }
+@keyframes fazer1 { 0% { left: 0; } 100% { left: -80px; opacity: 0; } }
+@keyframes fazer2 { 0% { left: 0; } 100% { left: -100px; opacity: 0; } }
+@keyframes fazer3 { 0% { left: 0; } 100% { left: -50px; opacity: 0; } }
+@keyframes fazer4 { 0% { left: 0; } 100% { left: -150px; opacity: 0; } }
+@keyframes lf { 0% { left: 200%; } 100% { left: -200%; opacity: 0; } }
+@keyframes lf2 { 0% { left: 200%; } 100% { left: -200%; opacity: 0; } }
+@keyframes lf3 { 0% { left: 200%; } 100% { left: -100%; opacity: 0; } }
+@keyframes lf4 { 0% { left: 200%; } 100% { left: -100%; opacity: 0; } }
+@media (max-width: 520px) { .dart-loader { --train-w: 252px; } .dart-loader-title { font-size: 12px; letter-spacing: .04em; } }
+@media (prefers-reduced-motion: reduce) { .dart-loader, .dart-loader *, .dart-dots::after { animation: none !important; } .dart-dots::after { width: 3ch; } .dart-speedlines, .dart-sparks { display: none; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import HomeMap, { type MapMarker } from "../../components/Map";
 import { mapColors } from "../../components/mapColors";
+import { DartLoader } from "@/components/ui/dart-loader";
 import { loadPreferences } from "../../lib/defaults";
 import type { MatchResult } from "../../lib/matching";
 import type { Destination, Preferences } from "../../lib/types";
@@ -42,7 +43,7 @@ export default function ResultsPage() {
     return [...homes, ...destinations];
   }, [results, highlightId]);
 
-  if (!preferences || (!results && !error)) return <main className="shell"><p>Finding homes that fit your life — checking routes on the Dublin transport network…</p></main>;
+  if (!preferences || (!results && !error)) return <main className="shell"><nav className="nav" aria-label="Main navigation"><Link className="brand" href="/">Home<span>Match</span></Link><Link className="back" href="/preferences">Edit life preferences</Link></nav><DartLoader /></main>;
   if (error || !results) return <main className="shell"><p>Sorry, we couldn’t calculate your matches ({error}).</p><Link className="back" href="/preferences">Back to preferences</Link></main>;
 
   const compare = results.filter((result) => comparisonIds.includes(result.property.id));
