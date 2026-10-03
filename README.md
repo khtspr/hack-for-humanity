@@ -1,6 +1,6 @@
 # HomeMatch 🏠
 
-> **Find a home based on where your life happens — not just where you think you should live.**
+> **Find a home based on where your life happens – not just where you think you should live.**
 
 ## 1. The Problem
 
@@ -287,14 +287,14 @@ HomeMatch searches properties based on their accessibility to the user's workpla
 
 Results might include:
 
-**92% — Property A**
+**92% – Property A**
 
 - €1,850/month
 - 18-minute cycle
 - Direct bus connection
 - Within budget
 
-**87% — Property B**
+**87% – Property B**
 
 - €1,650/month
 - 27-minute train/bus journey
@@ -415,9 +415,9 @@ The generated data in `data/generated/` is committed, so the app runs straight a
 
 | Data | Source | When |
 |---|---|---|
-| Listings (7 Dublin rentals) | Daft.ie — coordinates, rooms, facilities in `lib/data.ts` | static |
+| Listings (7 Dublin rentals) | Daft.ie – coordinates, rooms, facilities in `lib/data.ts` | static |
 | Stops and which lines serve them | [NTA GTFS timetable file](https://www.transportforireland.ie/transitData/Data/GTFS_Realtime.zip) → `npm run build:transit` → `data/generated/transit.json` (offline file, no API) | build time |
-| **Journey times** (walk, cycle, drive, road legs of bus/Luas trips) | OpenStreetMap routing — [OSRM on routing.openstreetmap.de](https://routing.openstreetmap.de), `table` service, batched + cached | request time |
+| **Journey times** (walk, cycle, drive, road legs of bus/Luas trips) | OpenStreetMap routing – [OSRM on routing.openstreetmap.de](https://routing.openstreetmap.de), `table` service, batched + cached | request time |
 | Kindergartens, schools, groceries within 1 km | OpenStreetMap Overpass → `npm run build:amenities` → `data/generated/amenities.json` | build time |
 | Destination coordinates | OpenStreetMap Nominatim (1 req/s, cached) | request time |
 | Map tiles | OpenStreetMap via Leaflet | browser |
