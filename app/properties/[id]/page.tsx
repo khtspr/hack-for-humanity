@@ -13,8 +13,8 @@ export const dynamic = "force-dynamic"; // reads generated data from disk at req
 
 const walk = (m: number) => `${Math.max(1, Math.round(walkMinutes(m)))} min walk`;
 
-export default function PropertyPage({ params }: { params: { id: string } }) {
-  const raw = getProperty(params.id);
+export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
+  const raw = getProperty((await params).id);
   if (!raw) notFound();
   const { property, connectivity } = withConnectivity(raw);
   const amenities = getAmenities(property.id);
