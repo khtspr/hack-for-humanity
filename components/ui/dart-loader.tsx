@@ -4,7 +4,8 @@
 // 8100-class DART (green/lime livery, yellow cab, red bumper), the
 // speed lines and sparks reuse its fazer / lf keyframes, and the
 // clouds, catenary poles and sleepers scroll past to sell the motion.
-// Styles live in app/globals.css under "DART loader".
+// Styles live in app/globals.css under "6. DART loader" (night-run
+// palette); the train livery itself is unchanged.
 // ─────────────────────────────────────────────────────────────
 
 const C = {
@@ -70,7 +71,8 @@ const Carriage = ({ x, w }: { x: number; w: number }) => (
   </>
 )
 
-function DartTrain() {
+/** The pixel-art DART on its own (decorative, aria-hidden). Exported for reuse outside the loader. */
+export function DartTrain() {
   return (
     <svg className="dart-train-svg" viewBox="0 0 124 44" shapeRendering="crispEdges" aria-hidden="true">
       {/* Rear car */}
@@ -128,8 +130,8 @@ export interface DartLoaderProps {
 }
 
 export function DartLoader({
-  title = "Finding homes that fit your life",
-  detail = "Checking routes on the Dublin transport network",
+  title = "Next stop: homes that fit your life",
+  detail = "Timing every journey on the Luas, DART and bus network",
 }: DartLoaderProps) {
   return (
     <div className="dart-loader-card" role="status" aria-live="polite">
