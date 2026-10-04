@@ -17,8 +17,8 @@ const walk = (m: number) => `${Math.max(1, Math.round(walkMinutes(m)))} min walk
 // Bus-only stops draw smaller than Luas/rail stops, so size backs up the colour difference.
 const isRailStop = (types: number[]) => types.some((t) => t === 0 || t === 1 || t === 2);
 
-export default function PropertyPage({ params }: { params: { id: string } }) {
-  const raw = getProperty(params.id);
+export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
+  const raw = getProperty((await params).id);
   if (!raw) notFound();
   const { property, connectivity } = withConnectivity(raw);
   const amenities = getAmenities(property.id);

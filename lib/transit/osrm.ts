@@ -1,6 +1,7 @@
 // Street-network travel times from OpenStreetMap, via the OSRM servers run by FOSSGIS (routing.openstreetmap.de).
 // Uses the `table` service so a whole results page costs one request per profile instead of one per journey.
 import type { LatLng } from "../types";
+import { USER_AGENT } from "./geocode";
 
 export type Profile = "foot" | "bike" | "car";
 
@@ -13,6 +14,7 @@ const MAX_COORDS_PER_REQUEST = 90; // stay under the public server's table size 
 const TIMEOUT_MS = 20_000;
 const GAP_MS = 400; // pause between requests on the same profile
 const MAX_RETRIES = 3;
+const MAX_CACHED = 50_000; // pairs; bounds memory on long-lived server instances
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 // Kept on globalThis so dev hot-reloads don't throw away routes we've already paid for.
@@ -34,7 +36,7 @@ async function table(profile: Profile, sources: LatLng[], destinations: LatLng[]
   const url = `${BASE[profile]}/table/v1/driving/${points.map(coord).join(";")}?sources=${sources.map((_, i) => i).join(";")}&destinations=${destinations.map((_, i) => i + sources.length).join(";")}&annotations=duration`;
   for (let attempt = 0; ; attempt++) {
     try {
-      const res = await fetch(url, { headers: { "User-Agent": "HomeMatch-hackathon/0.1" }, signal: AbortSignal.timeout(TIMEOUT_MS) });
+      const res = await fetch(url, { headers: { "User-Agent": USER_AGENT }, signal: AbortSignal.timeout(TIMEOUT_MS) });
       if (res.status === 429 && attempt < MAX_RETRIES) {
         // Rate limited: honour Retry-After when given, otherwise back off exponentially.
         await sleep((Number(res.headers.get("retry-after")) || 2 ** attempt) * 1000);
@@ -72,7 +74,10 @@ export async function durations(profile: Profile, pairs: [LatLng, LatLng][]): Pr
         const ss = sourceList.slice(s, s + sourceChunk);
         const matrix = await enqueue(profile, () => table(profile, ss, ds));
         if (!matrix) continue; // leave uncached so a later request retries
-        ss.forEach((a, i) => ds.forEach((b, j) => state.cache.set(pairKey(profile, a, b), matrix[i]?.[j] ?? null)));
+        ss.forEach((a, i) => ds.forEach((b, j) => {
+          if (state.cache.size >= MAX_CACHED) state.cache.delete(state.cache.keys().next().value!);
+          state.cache.set(pairKey(profile, a, b), matrix[i]?.[j] ?? null);
+        }));
       }
     }
   }
