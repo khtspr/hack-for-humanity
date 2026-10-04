@@ -12,7 +12,9 @@
     "prepare-data": "npm run build:transit && npm run build:amenities"
   },
   "dependencies": {
+    "framer-motion": "^14.0.0",
     "leaflet": "^1.9.4",
+    "lucide-react": "^1.52.0",
     "next": "15.5.27",
     "react": "19.3.0",
     "react-dom": "19.3.0",

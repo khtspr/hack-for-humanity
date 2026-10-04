@@ -320,6 +320,27 @@ select {
   background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23a7afbd' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center / 12px 8px;
 }
 option { background: var(--surface); color: var(--text); }
+
+/* Animated dropdown (components/ui/animated-dropdown.tsx): same look as the select above, with an animated list. */
+.dropdown { position: relative; }
+.dropdown-trigger {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 48px; padding: 12px 14px;
+  border: 1px solid var(--control); border-radius: var(--radius-md); background: var(--surface); color: var(--text);
+  font: 400 16px/1.3 var(--font-sans); text-align: left; cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+.dropdown-trigger:hover { border-color: var(--muted); }
+.dropdown-trigger:focus-visible, .dropdown-trigger[aria-expanded="true"] { border-color: var(--yellow); outline-offset: 2px; }
+.dropdown-chevron { display: inline-flex; flex: none; color: var(--muted); }
+.dropdown-list {
+  position: absolute; top: calc(100% + 6px); left: 0; min-width: 100%; width: max-content; max-width: 80vw; z-index: 30; margin: 0; padding: 4px; list-style: none;
+  border: 1px solid var(--control); border-radius: var(--radius-md); background: var(--elevated); box-shadow: 0 12px 32px rgba(0, 0, 0, .55);
+  transform-origin: top;
+}
+.dropdown-option { padding: 10px 12px; border-radius: 6px; color: var(--text); font-size: 16px; line-height: 1.3; cursor: pointer; }
+.dropdown-option[data-active] { background: var(--elevated-2); }
+.dropdown-option[aria-selected="true"] { background: var(--yellow-tint); color: var(--yellow); font-weight: 700; }
+.dropdown-option[aria-selected="true"][data-active] { background: var(--yellow-tint-press); }
 input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus { -webkit-text-fill-color: var(--text); caret-color: var(--text); box-shadow: 0 0 0 1000px var(--surface) inset; transition: background-color 9999s; }
 .row { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
 .row > .field { flex: 1; }
