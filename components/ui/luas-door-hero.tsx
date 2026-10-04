@@ -58,10 +58,10 @@ const RIGHT_TRAVEL = DOOR_CX - RIGHT_LEAF.x
 const GLASS = { top: 244, bottom: 736 }
 
 const DEFAULT_CITY = "/hero/dublin-liffey.webp"
-const SANS = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
-const COL_BG = "#05070d"
-const COL_TEXT = "#f2f4f8"
-const LUAS_YELLOW = "#f5b919"
+const SANS = "var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif)"
+const COL_BG = "var(--bg, #05070d)"
+const COL_TEXT = "var(--text, #f2f4f8)"
+const LUAS_YELLOW = "var(--yellow, #f5b919)"
 
 /** Extra zoom beyond "cover" so the doorway can be centred without exposing edges. */
 const OVERSCAN = 1.08
@@ -79,10 +79,11 @@ const HERO_CSS = `
     0%, 100% { transform: translateY(0); opacity: 0.5; }
     50% { transform: translateY(5px); opacity: 1; }
   }
-  .ldh-cta { display: inline-flex; align-items: center; gap: 10px; margin-top: 28px; padding: 14px 24px; border-radius: 999px; background: ${LUAS_YELLOW}; color: #14110a; font-weight: 700; font-size: 16px; letter-spacing: 0.01em; box-shadow: 0 10px 30px rgba(0,0,0,0.35); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+  .ldh-cta { display: inline-flex; align-items: center; gap: 10px; margin-top: 28px; padding: 14px 24px; border-radius: 999px; background: ${LUAS_YELLOW}; color: var(--on-yellow, #14110a); font-weight: 700; font-size: 16px; letter-spacing: 0.01em; box-shadow: 0 10px 30px rgba(0,0,0,0.35); transition: transform 0.2s ease, box-shadow 0.2s ease; }
   .ldh-cta:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(0,0,0,0.45); }
   .ldh-cta span { transition: transform 0.2s ease; }
   .ldh-cta:hover span { transform: translateX(3px); }
+  .ldh-cta:active { transform: translateY(2px); box-shadow: 0 4px 12px rgba(0,0,0,0.35); transition-duration: 60ms; }
   .ldh-skip { border: 0; background: none; color: rgba(240,244,248,0.7); cursor: pointer; font: 600 12px/1 ${SANS}; letter-spacing: 0.14em; text-transform: uppercase; padding: 8px 0; transition: color 0.2s ease; }
   .ldh-skip:hover { color: ${COL_TEXT}; }
   .ldh a:focus-visible, .ldh button:focus-visible { outline: 3px solid ${LUAS_YELLOW}; outline-offset: 4px; box-shadow: 0 0 0 4px ${COL_BG}; }

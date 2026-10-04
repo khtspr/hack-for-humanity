@@ -3,6 +3,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useMemo } from "react";
 import { Circle, CircleMarker, MapContainer, Marker, Popup, TileLayer, Tooltip, useMap } from "react-leaflet";
+import { mapColors } from "./mapColors";
 
 export type MapMarker = {
   id: string;
@@ -15,6 +16,10 @@ export type MapMarker = {
   title: string;
   detail?: string;
   highlighted?: boolean;
+  /** "alt" draws a dashed ring on the pin: the non-colour cue for "Worth considering". */
+  variant?: "alt";
+  /** CircleMarker radius for stop/amenity dots (defaults: stop 6, amenity 5). */
+  radius?: number;
 };
 
 export type MapViewProps = {
@@ -29,9 +34,10 @@ export type MapViewProps = {
 // divIcons are plain HTML, which sidesteps Leaflet's default PNG marker paths that break under bundlers.
 function pinIcon(marker: MapMarker) {
   const size = marker.highlighted ? 44 : 36;
+  const classes = ["map-pin", marker.highlighted && "is-highlighted", marker.variant === "alt" && "is-alt", marker.label && !/\d/.test(marker.label) && "is-glyph"].filter(Boolean).join(" ");
   return L.divIcon({
     className: "map-pin-wrapper",
-    html: `<div class="map-pin${marker.highlighted ? " is-highlighted" : ""}" style="--pin:${marker.color};width:${size}px;height:${size}px">${marker.label ?? ""}</div>`,
+    html: `<div class="${classes}" style="--pin:${marker.color};width:${size}px;height:${size}px">${marker.label ?? ""}</div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
@@ -57,16 +63,21 @@ export default function MapView({ markers, circle, height = 360, fitKinds, onMar
   return (
     <div className="map-frame" style={{ height }}>
       <MapContainer center={[53.3498, -6.2603]} zoom={12} scrollWheelZoom={false} style={{ height: "100%", width: "100%" }}>
-        <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19} />
-        {circle && <Circle center={[circle.lat, circle.lng]} radius={circle.radius} pathOptions={{ color: "#185c3d", weight: 1, fillOpacity: 0.04, dashArray: "4 6" }} />}
+        {/* Standard OSM tiles, darkened by a CSS filter on .leaflet-tile-pane (globals.css) — CARTO's dark basemap now needs an API key. */}
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
+        />
+        {circle && <Circle center={[circle.lat, circle.lng]} radius={circle.radius} pathOptions={{ color: mapColors.radius, weight: 1.5, opacity: 0.9, dashArray: "4 6", fillColor: mapColors.radius, fillOpacity: 0.05 }} />}
         {dots.map((m) => (
-          <CircleMarker key={m.id} center={[m.lat, m.lng]} radius={m.kind === "stop" ? 5 : 6} pathOptions={{ color: "#fff", weight: 1.5, fillColor: m.color, fillOpacity: 0.95 }}>
-            <Tooltip direction="top" offset={[0, -4]}><strong>{m.title}</strong>{m.detail && <><br />{m.detail}</>}</Tooltip>
+          <CircleMarker key={m.id} center={[m.lat, m.lng]} radius={m.radius ?? (m.kind === "stop" ? 6 : 5)} pathOptions={{ color: mapColors.halo, weight: 1.5, fillColor: m.color, fillOpacity: 1 }}>
+            <Tooltip direction="top" offset={[0, -4]}><strong>{m.title}</strong>{m.detail && <span className="map-tip-detail">{m.detail}</span>}</Tooltip>
           </CircleMarker>
         ))}
         {pins.map((m) => (
           <Marker key={m.id} position={[m.lat, m.lng]} icon={pinIcon(m)} zIndexOffset={m.highlighted ? 1000 : m.kind === "property" ? 500 : 0} eventHandlers={onMarkerClick ? { click: () => onMarkerClick(m.id) } : undefined}>
-            <Popup><strong>{m.title}</strong>{m.detail && <><br />{m.detail}</>}</Popup>
+            <Popup><strong>{m.title}</strong>{m.detail && <span className="map-tip-detail">{m.detail}</span>}</Popup>
           </Marker>
         ))}
         <FitBounds points={points} circle={circle} />
