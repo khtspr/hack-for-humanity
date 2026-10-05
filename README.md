@@ -2,429 +2,166 @@
 
 > **Find a home based on where your life happens – not just where you think you should live.**
 
-## 1. The Problem
+![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=nextdotjs)
+![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6?logo=typescript&logoColor=white)
+![Node](https://img.shields.io/badge/Node-%E2%89%A522.18-339933?logo=nodedotjs&logoColor=white)
+![Status](https://img.shields.io/badge/status-hackathon%20prototype-yellow)
 
-Finding somewhere to live is difficult.
+HomeMatch is a commute-based housing search for **Dublin**. Instead of asking *"Where do you want to live?"*, it asks **"Where do you need to go?"** – then ranks homes by how well they fit your budget, your commute, your public transport options and your lifestyle, and **explains why** each one was recommended.
 
-Traditional property platforms primarily ask users **where they want to live**, then allow them to filter listings by criteria such as price, number of bedrooms, and property type.
+Built for the **Hack for Humanity – Local Track** hackathon. 📑 **[View the pitch deck (PDF)](docs/HomeMatch-presentation.pdf)**
 
-But most people don't actually need to live in one specific area.
-
-What they really care about is:
-
-- Can I get to work easily?
-- Can I afford the property?
-- How long will my commute take?
-- Can I get there without a car?
-- Is there useful public transport nearby?
-- If I drive, is parking available?
-
-This creates a discovery problem: **a suitable home may exist somewhere the user never thought to search.**
-
-## 2. Our Solution
-
-**HomeMatch** is a smarter housing search platform inspired by the discovery experience of services such as Skyscanner.
-
-Instead of starting with:
-
-> "Where do you want to live?"
-
-HomeMatch starts with:
-
-> **"Where do you need to go?"**
-
-The user provides information about their lifestyle, priorities and budget. HomeMatch then searches across available properties and recommends homes based on their overall suitability.
-
-It can also recommend properties that don't perfectly satisfy every preference but may represent a better overall choice.
-
-For example:
-
-> A user wants an apartment close to their workplace for €1,800/month.
-
-> HomeMatch discovers a €1,800/month apartment that is not very close to their workplace in walking distance, but it sits directly beside a tram station and doesn't require the user to own a car or walk.
-
-The user would've normally not discovered that place because of the distance using a traditional home search engine. HomeSearch helps people find places that normally would appear too far and therefore not even get found.
+<!-- TODO: add a screenshot or demo GIF here, e.g. ![HomeMatch results](docs/screenshot.png) -->
 
 ---
 
-# 3. Core Principle
+## The problem
 
-## Search by your life, not by location.
+Property sites make you pick an area first, then filter by price and bedrooms. But most people don't need one specific neighbourhood – they need to reach work, school, family and childcare easily and affordably, with or without a car.
 
-Existing property search:
+Because people instinctively search as central as possible, demand concentrates in a few areas and **prices rise disproportionately**, while well-connected homes further out go unseen.
 
-**Area → Properties**
+The result: **a suitable home often exists somewhere you never thought to look**, because it appears "too far" on a map even though it sits next to a tram stop, or a home that looks close has no useful transport at all.
 
-HomeMatch:
+## The solution
 
-**Work/school location → Properties**
+|  | Traditional search | HomeMatch |
+|---|---|---|
+| Starting point | Area → Properties | **Your destinations → Properties** |
+| Distance | Straight-line / map distance | **Real door-to-door commute time** by your chosen modes |
+| Results | Strict filters (hide anything that misses) | **Match Score** that surfaces good trade-offs |
+| Transparency | A list | **"Why we recommended this"** – strengths and trade-offs |
 
-This shifts housing search from a **neighbourhood or geographical distance search** into a **commute-based search** which includes places that appear far but are well connected, and discludes places that appear not too far but aren't connected via public transit at all.
+> *Example: a €1,800/month apartment that isn't walkable to your office but is beside a Luas stop and needs no car can outrank a closer one with poor connections.*
 
----
+## Who it's for
 
-# 4. Target Users
-
-HomeMatch could support both:
-
-### Renters
-
-People searching for apartments, houses, rooms or other rental accommodation.
-
-### Buyers
-
-People looking to purchase a home who may be unfamiliar with areas that fit their lifestyle and commuting requirements.
-
-It is particularly useful for:
-
-- People moving to a new city
-- Students
-- Young professionals
-- Families
-- People changing jobs
-- People without cars
-- Remote/hybrid workers
-- People struggling to find housing within their preferred area
+Renters and buyers new to a city, students, young professionals, families, people changing jobs, people without cars, and hybrid workers – including households with **several people going to several places**.
 
 ---
 
-# 5. User Inputs
+## Features
 
-## Essential
+- **Multi-destination preferences** – add workplaces, university, school, family, etc., each with a type, visits per week and importance (low / medium / high).
+- **Transport modes** – car, train, bus, bike, walk.
+- **Match Score (0–100)** per property, with sub-scores for affordability, commute, transport, property fit and lifestyle.
+- **Transparent, no-AI scoring** – a simple weighted algorithm you can inspect; no wasteful use of AI.
+- **Smart categories** – *Best overall*, *Best value*, *Best commute*, *Worth considering*.
+- **Plain-language explanations** – strengths, trade-offs and how far each result is over/under budget or commute limit.
+- **Interactive map** (Leaflet + OpenStreetMap) next to ranked property cards.
+- **Property detail page** with per-destination commutes and nearby kindergartens, schools and grocery stores (within 1 km).
+- **Real data** – Dublin rental listings from Daft.ie, NTA GTFS stops/lines, OpenStreetMap routing.
+- **Polished "Night Line" dark UI** – scroll-scrubbed Luas-door hero, pixel-art DART loading screen and a few hidden easter eggs (see [`docs/whimsy.md`](docs/whimsy.md)).
 
-### Budget
-- Maximum monthly rent
-- Purchase budget
-- Flexible/strict budget
-- Number of rooms
+## How the Match Score works
 
-### Important Locations
-Users can enter the places they/their family needs to go to.
-HomeMatch should accomodate for every member of the house, it should not be just for a single student.
+Every property is scored rather than hard-filtered:
 
-Examples:
+| Component | Weight |
+|---|---|
+| Affordability | 35% |
+| Commute (weighted by destination importance × visits/week) | 30% |
+| Transport connectivity (from GTFS stop/line data) | 15% |
+| Property requirements (type, bedrooms, …) | 10% |
+| Lifestyle (nearby amenities) | 10% |
 
-- Workplaces
-- University/school
-- Kindergarten
-- Family (parents' house)
-- City centre
-- Grocery store
+### Commute estimates
 
+For each destination, HomeMatch builds candidate journeys for the modes you picked and times each leg on OpenStreetMap:
 
+- **Walk / cycle:** OSM foot/bike route.
+- **Drive:** OSM car route × 1.4 (OSRM assumes empty roads) + 5 min parking.
+- **Bus / Luas:** walk to a stop + half the peak headway + OSM road time × 1.6 (bus) / 1.3 (Luas) + walk from the stop.
+- **DART / rail** and **journeys needing a change** are shown as *estimates*.
 
-### Transport Preferences
-
-Users select transport methods available to them:
-
-- 🚗 Driving
-- 🚆 Train
-- 🚌 Bus
-- 🚲 Cycling
-- 🚶 Walking
-
-The system can consider:
-
-- Journey time
-- Public transport connections
-- Nearby stations/stops
-- Parking availability
-- Cycling routes
-- Walking distance
-
-### Property Preferences
-
-- Rent / Buy
-- Property type
-- Bedrooms
-- Bathrooms
-- Furnished/unfurnished
-- Minimum size
-- Other preferences
+The first search for a new set of destinations takes ~10 s (requests are spaced out for the shared OSRM server); repeats are served from cache.
 
 ---
 
-# 6. Smart Matching
-
-Instead of applying every preference as a strict filter, HomeMatch assigns each property a **Match Score**.
-
-Example:
-
-## 91% Match
-
-**€1,650/month**
-
-✅ 22-minute commute to work  
-✅ Train station 4 minutes away  
-✅ Within budget  
-✅ 2 bedrooms  
-⚠️ 12 minutes farther from city centre than requested  
-
-This gives users much more information than a traditional search result.
-
-### Example Scoring Model
-
-For the hackathon prototype:
-
-```text
-Match Score =
-    35% affordability
-  + 30% commute
-  + 15% transport connectivity
-  + 10% property requirements
-  + 10% lifestyle preferences
-```
-
-The weights could eventually be customised based on what matters most to each user.
-
----
-
-# 7. Discovery / "Advanced Search"
-
-One of HomeMatch's key features is deliberately showing users **good options outside their original assumptions**.
-
-For example:
-
-> "This home is 36 minutes away (20% further away) despite your search for a 30 minute commute. However, it is below your budget"
-
-Or:
-
-> "This home exceeds your budget by 10%, but matches your preferences."
-
-Or:
-
-> "You selected driving, but this property has a direct train connection to your workplace and could remove the need for a daily car commute."
-
-HomeMatch should always explain **why a recommendation is being shown**.
-
-# 8. Main Screens
-
-For the hackathon MVP, focus on approximately **four screens**.
-
-### 1. Landing Page
-
-Headline:
-
-**Find a home that fits your life.**
-
-CTA:
-
-**Find my home**
-
-### 2. Preferences
-
-Simple onboarding asking for the user inputs under heading #5.
-
-### 3. Results
-
-Map + property cards ranked by Match Score.
-
-Each card should immediately show:
-
-- Price
-- Commute time
-- Transport type for the commute time shown
-- Number of rooms
-
-### 4. Property Detail
-
-Shows the property alongside an explanation of **why it matches the user**.
-
----
-
-# 10. Hackathon MVP
-
-The goal is NOT to recreate Daft.ie.
-
-The goal is to prove that **a better housing discovery model is possible.**
-
-### Build
-
-- Preference onboarding
-- Small dataset of sample properties
-- Match Score algorithm
-- Ranked recommendation page
-- Commute information
-- Map if practical
-- "Why we recommended this" explanation
-
-### Don't Build
-
-For the hackathon, avoid spending significant time on:
-
-- User authentication
-- Payments
-- Messaging landlords
-- Real estate agent accounts
-- Large property databases
-- Full listing management
-- Complex recommendation AI
-- Production infrastructure
-
-Fake/mock data is sufficient to demonstrate the concept unless the hackathon specifically requires live data.
-
----
-
-# 11. Example Demo
-
-### User
-
-**Profile**
-
-Works at: Google Dublin  
-Budget: €2,000/month  
-Needs: 1+ bedroom  
-Transport: Bike + public transport  
-Maximum commute: 30 minutes
-
-### Traditional Search
-
-The user needs to decide which Dublin neighbourhoods to search individually on a site like daft.ie
-
-### HomeMatch
-
-HomeMatch searches properties based on their accessibility to the user's workplace.
-
-Results might include:
-
-**92% – Property A**
-
-- €1,850/month
-- 18-minute cycle
-- Direct bus connection
-- Within budget
-
-**87% – Property B**
-
-- €1,650/month
-- 27-minute train/bus journey
-- €200/month cheaper
-- Outside the area the user originally considered
-
-HomeMatch explains the trade-off instead of simply excluding Property B.
-
----
-
-# 12. Technical Architecture
-
-A simple hackathon architecture could be:
-
-```text
-Frontend
-   ↓
-User Preferences
-   ↓
-Matching Engine
-   ↓
-Property Dataset
-   +
-Transport / Routing Data
-   ↓
-Match Scores
-   ↓
-Ranked Properties
-```
-
-Potential components:
-
-### Frontend
-React / Next.js
-
-### Backend
-Node.js / Python
-
-### Property Data
-Mock dataset or available property API/dataset
-
-### Maps / Routing
-OpenStreetMap: Leaflet tiles, OSRM routing (journey times), Overpass amenities, Nominatim geocoding. Stop locations from the NTA GTFS file.
-
-### Matching Engine
-Simple weighted scoring algorithm
-
-No machine learning is necessary for the MVP.
-
----
-
-# 13. Future Features
-
-With additional development, HomeMatch could include:
-
-- Real property feeds
-- Multiple workplaces/destinations
-- Hybrid-working schedules
-- Schools and childcare
-- Healthcare accessibility
-- Grocery stores and amenities
-- Accessibility requirements
-- Safety and environmental information
-- Commute cost estimation
-- Car ownership cost comparison
-- Parking costs
-- Personalised recommendation learning
-- Saved searches
-- Alerts when high-match properties appear
-- Comparison between properties
-
-Don't implement them for the MVP.
-
----
-
-# 14. Impact
-
-Housing availability cannot be solved solely by improving search.
-
-However, **housing discovery can be improved.**
-
-HomeMatch can help people:
-
-- Discover areas they hadn't considered
-- Find housing compatible with public transport
-- Find more listings without manually researching every district or searching the entire city.
-
-Instead of asking people to understand an entire city's transport network and how its linked to every part of a city before searching, HomeMatch performs that analysis for them.
-
----
-
-# 15. Elevator Pitch
-
-**HomeMatch is Skyscanner for housing.**
-
-Traditional property websites ask you where you want to live.
-
-We ask **where you need to go**.
-
-Tell HomeMatch where you work and your budget. We find properties based on how far they actually are for where you need to be, helping you find places that appear far but are easy to commute from thanks to public transit and road connections.
-
-**Don't search neighbourhoods. Search for the home that fits your life.**
-
----
-
-# 16. Running Locally
-
-Requires **Node ≥ 22.18** (the data scripts import `lib/data.ts` using Node's built-in TypeScript support). No API keys needed.
-
-```bash
-npm install
-npm run dev
-```
-
-The generated data in `data/generated/` is committed, so the app runs straight away. To refresh it: `npm run prepare-data` (stop/line file ~1 min + OSM amenities, a few min).
+## App overview
+
+| Route | Purpose |
+|---|---|
+| `/` | Landing page with the Luas-door hero |
+| `/preferences` | Budget, bedrooms, max commute, transport modes, destinations |
+| `/results` | Ranked property cards + map |
+| `/properties/[id]` | Property detail, "why it matches", commutes, amenities |
+| `POST /api/match` | Takes preferences, returns ranked `MatchResult[]` (validated, JSON-only, 16 KB cap) |
+| `GET /api/amenities/[propertyId]` | Precomputed nearby amenities |
+
+## Tech stack
+
+- **Framework:** Next.js 15 (App Router), React 19, TypeScript
+- **Map & UI:** Leaflet / react-leaflet, framer-motion, lucide-react, plain CSS design tokens
+- **Backend:** Next.js route handlers – no separate server or database
+- **Security:** strict CSP and security headers in `next.config.mjs`, input validation in `lib/validate.ts`
 
 ### Data sources
 
 | Data | Source | When |
 |---|---|---|
-| Listings (7 Dublin rentals) | Daft.ie – coordinates, rooms, facilities in `lib/data.ts` | static |
-| Stops and which lines serve them | [NTA GTFS timetable file](https://www.transportforireland.ie/transitData/Data/GTFS_Realtime.zip) → `npm run build:transit` → `data/generated/transit.json` (offline file, no API) | build time |
-| **Journey times** (walk, cycle, drive, road legs of bus/Luas trips) | OpenStreetMap routing – [OSRM on routing.openstreetmap.de](https://routing.openstreetmap.de), `table` service, batched + cached | request time |
-| Kindergartens, schools, groceries within 1 km | OpenStreetMap Overpass → `npm run build:amenities` → `data/generated/amenities.json` | build time |
+| Listings (11 Dublin rentals + 2 sample purchase listings) | Daft.ie – coordinates, rooms, facilities in `lib/data.ts` | static |
+| Stops and which lines serve them | [NTA GTFS timetable](https://www.transportforireland.ie/transitData/Data/GTFS_Realtime.zip) → `data/generated/transit.json` | build time |
+| Journey times | [OSRM](https://routing.openstreetmap.de) `table` service, batched + cached | request time |
+| Kindergartens, schools, groceries | OpenStreetMap Overpass → `data/generated/amenities.json` | build time |
 | Destination coordinates | OpenStreetMap Nominatim (1 req/s, cached) | request time |
 | Map tiles | OpenStreetMap via Leaflet | browser |
 
-**Commute estimate:** for each destination, HomeMatch builds candidate journeys for the modes the user picked and times every leg on OpenStreetMap:
-- **Walk / cycle:** OSM foot/bike route. **Drive:** OSM car route × 1.4 (OSRM assumes empty roads) + 5 min parking.
-- **Bus / Luas:** the stop file finds a line serving a stop near home and, further along, a stop near the destination. Time = OSM walk to the stop + half the peak headway + OSM road time between the stops × 1.6 (bus) / 1.3 (Luas) + OSM walk from the stop.
-- **DART / rail** (no road to route on) and **journeys needing a change** are shown as *estimates*.
+---
 
-The first search for a new set of destinations takes ~10 s (OSRM requests are spaced out for the shared community server); repeats come from cache in milliseconds.
+## Getting started
+
+Requires **Node ≥ 22.18** (the data scripts import `lib/data.ts` using Node's built-in TypeScript support). **No API keys needed.**
+
+```bash
+npm install
+npm run dev        # http://localhost:3000
+```
+
+The generated data in `data/generated/` is committed, so the app runs straight away.
+
+| Script | What it does |
+|---|---|
+| `npm run dev` | Start the dev server |
+| `npm run build` / `npm start` | Production build / serve |
+| `npm run lint` | Lint the project |
+| `npm run prepare-data` | Refresh GTFS transit data (~1 min) and OSM amenities (a few min) |
+| `npm run build:transit` / `npm run build:amenities` | Run either data step on its own |
+
+## Project structure
+
+```
+app/            Pages and API routes (landing, preferences, results, properties, /api/*)
+components/     Map, header/footer, commutes panel, UI + whimsy components
+lib/            Matching engine (matching.ts), listings (data.ts), validation,
+                transit/ (OSRM routing, GTFS connectivity, geocoding)
+data/generated/ Prebuilt transit and amenity data
+scripts/        build-transit.mjs, fetch-amenities.mjs
+docs/           design-system.md ("Night Line"), whimsy.md
+public/hero/    Hero imagery
+```
+
+## Roadmap
+
+- Real-time listings through integration with property platforms like Daft.ie
+- Environmental impact – reward the benefit of not needing a car when evaluating a property
+- Additional factors: local safety, air quality and environmental information (with sparing, sustainable use of AI)
+- Hybrid-working schedules and per-user weight customisation
+- Healthcare and accessibility requirements
+- Commute cost, car ownership and parking cost comparison
+- Saved searches, alerts and side-by-side comparison
+
+## Impact
+
+Better search won't solve housing supply, but it can improve **housing discovery**. HomeMatch does the transport analysis for you, so people can find well-connected homes in areas they hadn't considered – without researching every district of the city.
+
+**HomeMatch is Skyscanner for housing.** *Don't search neighbourhoods. Search for the home that fits your life.*
+
+## Team
+
+Built by **Alper Ergüne**, **Guillermo Garcia** and **Kacper Kotwica** for the Hack for Humanity Local Track.
+
+## License
+
+No license has been specified yet. <!-- TODO: add a LICENSE file (e.g. MIT) -->
