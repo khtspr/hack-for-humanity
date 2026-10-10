@@ -4,23 +4,23 @@ import Link from "next/link"
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react"
 
 // ─────────────────────────────────────────────────────────────
-// LUAS DOOR HERO — scroll-locked, scroll-scrubbed intro.
+// LUAS DOOR HERO — scroll-triggered intro.
 // Adapted from the 21st.dev "scroll-locked video hero" (MetroHero
-// by guglielmogiannattasio). Instead of scrubbing a video, scroll
-// input drives a layered photo composite:
+// by guglielmogiannattasio). Instead of a video, a layered photo
+// composite plays out:
 //
 //   city photo  →  tram photo with the doorway cut out  →  two door
 //   leaves sliced from that same photo
 //
-// Scrolling first slides the plug doors shut→open, then dollies the
-// camera through the doorway until the city fills the screen.
+// The plug doors slide open, then the camera dollies through the
+// doorway until the city fills the screen.
 //
-// The first scroll at the top pins the page (body position:fixed — the
-// technique modal libraries use; overflow:hidden alone isn't reliable
-// on iOS) and from then on wheel / touch / keyboard input only moves the
-// scene. Once it has finished and the user pushes forward again, the
-// page unlocks and scrolls normally; scrolling back up at the very top
-// re-pins it and plays the doors in reverse.
+// A single scroll / swipe / key press at the top pins the page (body
+// position:fixed — the technique modal libraries use; overflow:hidden
+// alone isn't reliable on iOS) and plays the intro on a timer; input
+// during playback is swallowed. Once it has finished, a fresh push
+// forward unlocks the page and it scrolls normally. The intro plays
+// once — scrolling back up shows the opened state.
 // ─────────────────────────────────────────────────────────────
 
 export interface LuasDoorHeroProps {
@@ -32,8 +32,8 @@ export interface LuasDoorHeroProps {
   cityAlt?: string
   /** Element the "Skip intro" button jumps to once the intro is finished. */
   skipTargetId?: string
-  /** Total input distance (px) needed to play the whole intro. */
-  scrubDistance?: number
+  /** How long (ms) the intro plays once triggered. */
+  duration?: number
   /** Overlay content (e.g. the site nav), rendered above the scene. */
   children?: ReactNode
   className?: string
@@ -67,6 +67,10 @@ const LUAS_YELLOW = "var(--yellow, #f5b919)"
 const OVERSCAN = 1.08
 /** Forward input (px) past the end of the intro before the page unlocks. */
 const RELEASE_DISTANCE = 140
+/** Forward input (px) at the top that starts the intro — ignores accidental nudges. */
+const TRIGGER_DISTANCE = 24
+/** After the intro ends, the final frame holds this long (ms) before input can unlock the page. */
+const SETTLE_MS = 600
 /** Wheel silence (ms) that marks a new gesture — trackpad momentum never pauses this long. */
 const NEW_GESTURE_GAP = 180
 const TOUCH_GAIN = 1.4
@@ -118,7 +122,7 @@ export default function LuasDoorHero({
   citySrc = DEFAULT_CITY,
   cityAlt = "The River Liffey and the Ha'penny Bridge in Dublin city centre",
   skipTargetId,
-  scrubDistance = 2400,
+  duration = 3000,
   children,
   className,
   style,
@@ -177,8 +181,11 @@ export default function LuasDoorHero({
     let layout = computeLayout()
     let target = 0
     let current = 0
+    let intent = 0
     let overflow = 0
     let releaseArmed = false
+    let lastFrame = 0
+    let finishedAt = 0
     let lastWheelAt = -Infinity
     let started = false
     let locked = false
@@ -270,11 +277,21 @@ export default function LuasDoorHero({
       if (progressBarRef.current) progressBarRef.current.style.transform = `scaleX(${p})`
     }
 
-    function tick() {
-      current += (target - current) * 0.16
-      if (Math.abs(target - current) < 0.0004) current = target
+    // Timed playback: progress advances linearly with time; each stage in
+    // render() applies its own easing on top. dt is capped so a frame stall
+    // (or a backgrounded tab) doesn't skip the doors.
+    function tick(now: number) {
+      const dt = lastFrame ? Math.min(now - lastFrame, 64) : 16
+      lastFrame = now
+      current = Math.min(target, current + dt / duration)
       render(current)
-      rafId = current === target ? 0 : requestAnimationFrame(tick)
+      if (current < target) {
+        rafId = requestAnimationFrame(tick)
+      } else {
+        rafId = 0
+        lastFrame = 0
+        finishedAt = performance.now()
+      }
     }
     const kick = () => {
       if (!rafId) rafId = requestAnimationFrame(tick)
@@ -321,32 +338,37 @@ export default function LuasDoorHero({
 
     /** `gap`: ms since the previous wheel event (Infinity for touch / keys). */
     function push(dy: number, gap = Infinity) {
-      if (!dy) return
-      if (dy > 0 && target >= 1) {
-        // Trackpad momentum keeps streaming after the intro ends; only a fresh
-        // push (after a pause) counts towards unlocking the page.
-        if (!releaseArmed) {
-          if (gap < NEW_GESTURE_GAP) return
-          releaseArmed = true
-        }
-        overflow += dy
-        if (overflow >= RELEASE_DISTANCE && current > 0.97) {
-          overflow = 0
-          releaseArmed = false
-          releaseLock()
-        }
+      // The intro only plays forwards; backward input while pinned is just swallowed.
+      if (dy <= 0) return
+      if (target < 1) {
+        // One deliberate scroll starts the whole intro.
+        intent += dy
+        if (intent < TRIGGER_DISTANCE) return
+        target = 1
+        started = true
+        kick()
         return
       }
-      overflow = 0
-      releaseArmed = false
-      target = clamp(target + dy / scrubDistance, 0, 1)
-      if (target > 0.001) started = true
-      kick()
+      // Still playing, or the final frame is still settling: swallow input.
+      if (current < 1 || performance.now() - finishedAt < SETTLE_MS) return
+      // Trackpad momentum from the triggering flick keeps streaming; only a
+      // fresh push (after a pause) counts towards unlocking the page.
+      if (!releaseArmed) {
+        if (gap < NEW_GESTURE_GAP) return
+        releaseArmed = true
+      }
+      overflow += dy
+      if (overflow >= RELEASE_DISTANCE) {
+        overflow = 0
+        releaseArmed = false
+        releaseLock()
+      }
     }
 
     function finish() {
       cancelAnimationFrame(rafId)
       rafId = 0
+      lastFrame = 0
       target = current = 1
       started = true
       render(1)
@@ -359,11 +381,10 @@ export default function LuasDoorHero({
     }
 
     // The page is never pinned up front (that would also strand screen-reader
-    // and scrollbar users). It's taken over by input at the very top that
-    // would actually move the intro: forward before it's finished, or back
-    // once it has played.
+    // and scrollbar users). It's taken over by forward input at the very top,
+    // only while the intro hasn't played yet.
     const atTop = () => window.scrollY <= 1
-    const takesOver = (dy: number) => atTop() && (dy > 0 ? target < 1 : dy < 0 && target > 0)
+    const takesOver = (dy: number) => atTop() && dy > 0 && target < 1
     /** Routes one input delta; returns true when the page handled it (caller prevents default). */
     const handle = (dy: number, gap?: number) => {
       if (!locked && !(takesOver(dy) && engageLock())) return false
@@ -403,20 +424,17 @@ export default function LuasDoorHero({
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || isEditable(e.target)) return
-      const step = scrubDistance / 12
-      const page = scrubDistance / 4
+      // One key press is a full "push": it starts the intro, or once it has
+      // finished, unlocks the page.
+      const press = RELEASE_DISTANCE
       let dy = 0
       switch (e.key) {
-        case "ArrowDown": dy = step; break
-        case "ArrowUp": dy = -step; break
-        case "PageDown": dy = page; break
-        case "PageUp": dy = -page; break
-        case "End": dy = scrubDistance; break
-        case "Home": dy = -scrubDistance; break
+        case "ArrowDown": case "PageDown": case "End": dy = press; break
+        case "ArrowUp": case "PageUp": case "Home": dy = -press; break
         case " ":
           // Space activates focused buttons/links — leave those alone.
           if (e.target instanceof HTMLElement && e.target.closest("a, button, summary")) return
-          dy = e.shiftKey ? -page : page
+          dy = e.shiftKey ? -press : press
           break
         default:
           return
@@ -491,7 +509,7 @@ export default function LuasDoorHero({
       cancelAnimationFrame(rafId)
       releaseLock()
     }
-  }, [scrubDistance, skipTargetId])
+  }, [duration, skipTargetId])
 
   const fill: CSSProperties = { position: "absolute", inset: 0 }
   const centred: CSSProperties = {
